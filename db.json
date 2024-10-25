@@ -1,0 +1,22 @@
+{
+  "users": [
+    {
+      "username": "daniar",
+      "email": "daniar@gmail.com",
+      "password": "12345678",
+      "id": "1"
+    }
+  ],
+  "todos": [
+    {
+      "id": "1",
+      "title": "Call Saul",
+      "description": "(don't call)"
+    },
+    {
+      "id": "4268",
+      "title": "JohnDoe",
+      "description": ""
+    }
+  ]
+}
