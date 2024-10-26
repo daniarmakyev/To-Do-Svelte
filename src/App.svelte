@@ -5,13 +5,14 @@
   let toDoS = [];
   let activeInputs = {};
   let titleInput = "";
-
+  let titleId = "";
   function handleInput(event) {
     createInput = event.target.value;
   }
 
   function handleInputTitle(event) {
     titleInput = event.target.value;
+    titleId = event.target.id;
   }
   function isChanged(event, item) {
     if (event.target.value !== item) {
@@ -32,6 +33,7 @@
         isError = error;
       }
     }
+    fetchToDos();
   }
 
   async function getToDos() {
@@ -39,7 +41,7 @@
     return res.data;
   }
 
-  async function fetchAndLogToDos() {
+  async function fetchToDos() {
     try {
       const todos = await getToDos();
       toDoS = todos;
@@ -48,19 +50,19 @@
     }
   }
 
-  async function changeTitle(id) {
+  async function changeTitle(event) {
+    event.preventDefault();
     try {
-      await axios.patch(`/todos/${id}`, {
+      await axios.patch(`/todos/${titleId}`, {
         title: titleInput,
       });
     } catch (error) {
-      console.log("lox");
-
       isError = error;
     }
+    fetchToDos();
   }
 
-  fetchAndLogToDos();
+  fetchToDos();
 </script>
 
 <main class="container">
@@ -94,20 +96,33 @@
     {#if toDoS.length > 0}
       {#each toDoS as item, index}
         <label for=""> Название задачи</label>
-        <form class="listInner" on:submit={changeTitle}>
+        <form
+          class="listInner"
+          on:submit={(e) => {
+            changeTitle(e);
+          }}
+        >
           <input
             type="text"
             placeholder="Введите Название"
             value={item.title}
             id={item.id}
-            on:change={handleInputTitle}
+            on:input={(e) => {
+              handleInputTitle(e);
+            }}
             on:focus={() => (activeInputs[index] = true)}
             on:blur={(event) => (
               (activeInputs[index] = false), isChanged(event, item.title)
             )}
           />
           {#if activeInputs[index]}
-            <button class="btnSubmit titleBtn" type="submit">
+            <button
+              class="btnSubmit titleBtn"
+              type="submit"
+              on:click={(e) => {
+                changeTitle(e);
+              }}
+            >
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -175,7 +190,6 @@
     cursor: pointer;
     margin-left: -2px;
     border-radius: 0;
-    margin-right: 46px;
   }
 
   .btnSubmit:active {
@@ -200,7 +214,6 @@
     margin-bottom: 10px;
     background-color: #fff;
     padding: 8px;
-    margin-right: 46px;
     border: 0;
   }
 
@@ -211,12 +224,25 @@
 
   .listInner {
     display: flex;
+	position: relative;
+  }
+
+  .disabled {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .enabled {
+    opacity: 1;
+    pointer-events: all;
   }
 
   .titleBtn {
     max-height: 35.6px;
     border: 0;
     margin-right: 0;
+	position: absolute;
+	right: 0;
   }
 
   .edit-icon {
