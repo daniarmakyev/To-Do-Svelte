@@ -3,13 +3,21 @@
   let createInput = "";
   let isError = "";
   let toDoS = [];
-  // Объект для отслеживания состояния активности для каждого инпута
   let activeInputs = {};
+  let titleInput = "";
 
   function handleInput(event) {
     createInput = event.target.value;
   }
 
+  function handleInputTitle(event) {
+    titleInput = event.target.value;
+  }
+  function isChanged(event, item) {
+    if (event.target.value !== item) {
+      event.target.value = item;
+    }
+  }
   async function handelSubmit(event) {
     event.preventDefault();
     const data = {
@@ -36,6 +44,18 @@
       const todos = await getToDos();
       toDoS = todos;
     } catch (error) {
+      isError = error;
+    }
+  }
+
+  async function changeTitle(id) {
+    try {
+      await axios.patch(`/todos/${id}`, {
+        title: titleInput,
+      });
+    } catch (error) {
+      console.log("lox");
+
       isError = error;
     }
   }
@@ -74,16 +94,20 @@
     {#if toDoS.length > 0}
       {#each toDoS as item, index}
         <label for=""> Название задачи</label>
-        <div class="listInner">
+        <form class="listInner" on:submit={changeTitle}>
           <input
             type="text"
             placeholder="Введите Название"
-            bind:value={item.title}
+            value={item.title}
+            id={item.id}
+            on:change={handleInputTitle}
             on:focus={() => (activeInputs[index] = true)}
-            on:blur={() => (activeInputs[index] = false)}
+            on:blur={(event) => (
+              (activeInputs[index] = false), isChanged(event, item.title)
+            )}
           />
           {#if activeInputs[index]}
-            <button class="btnSubmit titleBtn">
+            <button class="btnSubmit titleBtn" type="submit">
               <svg
                 viewBox="0 0 24 24"
                 fill="none"
@@ -106,7 +130,7 @@
               </svg>
             </button>
           {/if}
-        </div>
+        </form>
       {/each}
     {/if}
   </div>
@@ -134,7 +158,6 @@
     border-right: none;
     padding: 10px;
     flex: 1;
-
   }
 
   .inputTask:focus-visible {
@@ -152,7 +175,7 @@
     cursor: pointer;
     margin-left: -2px;
     border-radius: 0;
-	margin-right: 46px;
+    margin-right: 46px;
   }
 
   .btnSubmit:active {
@@ -177,13 +200,13 @@
     margin-bottom: 10px;
     background-color: #fff;
     padding: 8px;
-	margin-right: 46px;
-	border: 0;
+    margin-right: 46px;
+    border: 0;
   }
 
   .list input:focus-visible {
-	outline: 0;
-	margin-right: 0;
+    outline: 0;
+    margin-right: 0;
   }
 
   .listInner {
@@ -192,11 +215,11 @@
 
   .titleBtn {
     max-height: 35.6px;
-	border: 0;
-	margin-right: 0;
+    border: 0;
+    margin-right: 0;
   }
 
   .edit-icon {
-	margin-left: 0;
+    margin-left: 0;
   }
 </style>
